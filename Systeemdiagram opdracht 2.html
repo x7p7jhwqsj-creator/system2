@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Systeemdiagram: Externe ICT Inhuur - Risicomanagement</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: #0a0e27;
+            color: #e0e6ed;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 30px;
+            background: linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%);
+            border-radius: 16px;
+            border: 2px solid #3d4775;
+        }
+
+        h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: #00d4ff;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #8b95b0;
+            font-weight: 300;
+        }
+
+        .diagram-wrapper {
+            background: #0f1428;
+            border-radius: 20px;
+            padding: 40px;
+            border: 3px solid #1e2749;
+            position: relative;
+            overflow: visible;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.1);
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Actor styles */
+        .actor {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .actor:hover .actor-body {
+            filter: brightness(1.2);
+            stroke-width: 3;
+        }
+
+        .actor:hover .actor-label {
+            font-weight: 700;
+            fill: #00d4ff;
+        }
+
+        .actor-body {
+            transition: all 0.3s ease;
+        }
+
+        /* Feedback loop styles */
+        .feedback-loop {
+            fill: none;
+            stroke-width: 3;
+            stroke-dasharray: 8, 4;
+            animation: dash 20s linear infinite;
+        }
+
+        .loop-r1 {
+            stroke: #ff3366;
+            filter: drop-shadow(0 0 8px rgba(255, 51, 102, 0.6));
+        }
+
+        .loop-r2 {
+            stroke: #ffaa00;
+            filter: drop-shadow(0 0 8px rgba(255, 170, 0, 0.6));
+        }
+
+        .loop-r3 {
+            stroke: #aa00ff;
+            filter: drop-shadow(0 0 8px rgba(170, 0, 255, 0.6));
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -240;
+            }
+        }
+
+        /* Intervention styles */
+        .intervention {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .intervention:hover {
+            transform: scale(1.1);
+        }
+
+        .intervention-marker {
+            filter: drop-shadow(0 0 12px currentColor);
+        }
+
+        /* Relationship arrows */
+        .relationship {
+            fill: none;
+            stroke: #4a9eff;
+            stroke-width: 2.5;
+            marker-end: url(#arrowhead);
+            transition: all 0.3s ease;
+        }
+
+        .relationship:hover {
+            stroke: #00d4ff;
+            stroke-width: 3.5;
+            filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.8));
+        }
+
+        /* Influence lines */
+        .influence {
+            fill: none;
+            stroke: #7c8ba1;
+            stroke-width: 1.5;
+            stroke-dasharray: 4, 3;
+            opacity: 0.6;
+        }
+
+        /* Legend */
+        .legend {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+            border: 2px solid #3d4775;
+        }
+
+        .legend-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 18px;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #0f1428;
+            border-radius: 8px;
+            border: 1px solid #2d3561;
+            transition: all 0.3s ease;
+        }
+
+        .legend-item:hover {
+            border-color: #00d4ff;
+            transform: translateX(5px);
+        }
+
+        .legend-symbol {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+
+        .legend-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .legend-label {
+            font-weight: 600;
+            color: #e0e6ed;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .legend-description {
+            font-size: 12px;
+            color: #8b95b0;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: rgba(15, 20, 40, 0.98);
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            padding: 12px 16px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .tooltip.active {
+            opacity: 1;
+        }
+
+        .tooltip-title {
+            font-weight: 700;
+            color: #00d4ff;
+            margin-bottom: 6px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        /* Animation for page load */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .diagram-wrapper {
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .legend {
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        /* Pulse animation for critical elements */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .critical {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Grid background effect */
+        .diagram-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            border-radius: 20px;
+            pointer-events: none;
+        }
+
+        /* Glow effect */
+        .glow {
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        /* Interactive info box */
+        .info-box {
+            background: linear-gradient(135deg, #1e2749 0%, #2d3561 100%);
+            border: 2px solid #3d4775;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .info-title {
+            font-family: 'Space Mono', monospace;
+            color: #00d4ff;
+            font-size: 16px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-content {
+            font-size: 14px;
+            color: #b8c1d3;
+            line-height: 1.7;
+        }
+
+        .info-content strong {
+            color: #e0e6ed;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .diagram-wrapper {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 26px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+            
+            h1 {
+                font-size: 22px;
+            }
+            
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Modal styles for click interactions */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 39, 0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%);
+            border: 3px solid #00d4ff;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.4);
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff3366;
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-weight: 700;
+        }
+
+        .modal-close:hover {
+            background: #ff5588;
+            transform: rotate(90deg);
+        }
+
+        .modal-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 24px;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            padding-right: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-section {
+            margin-bottom: 20px;
+        }
+
+        .modal-section-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            color: #ffaa00;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-text {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #e0e6ed;
+        }
+
+        .modal-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .modal-list li {
+            padding-left: 25px;
+            margin-bottom: 10px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .modal-list li:before {
+            content: "▹";
+            position: absolute;
+            left: 0;
+            color: #00d4ff;
+            font-weight: 700;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .risk-high {
+            background: #ff3366;
+            color: white;
+        }
+
+        .risk-medium {
+            background: #ffaa00;
+            color: #0a0e27;
+        }
+
+        .risk-low {
+            background: #00ff88;
+            color: #0a0e27;
+        }
+
+        .clickable {
+            cursor: pointer;
+        }
+
+        .clickable:hover {
+            opacity: 0.8;
+        }
+
+        /* Instruction banner */
+        .instruction-banner {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #0a0e27;
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .instruction-banner strong {
+            font-family: 'Space Mono', monospace;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Systeemdiagram: Externe ICT Inhuur</h1>
+            <p class="subtitle">Actoren, Relaties, Feedbackloops & Interventies</p>
+        </header>
+
+        <div class="instruction-banner">
+            <strong>💡 Interactief Diagram:</strong> Klik op actoren (rechthoeken), feedbackloops (gekleurde lijnen), of interventies (cirkels) voor gedetailleerde informatie
+        </div>
+
+        <div class="diagram-wrapper">
+            <svg viewBox="0 0 1400 1600" xmlns="http://www.w3.org/2000/svg">
+                <!-- Definitions -->
+                <defs>
+                    <!-- Arrowhead for relationships -->
+                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#4a9eff"/>
+                    </marker>
+                    
+                    <!-- Arrowhead for feedback loops -->
+                    <marker id="arrow-r1" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#ff3366"/>
+                    </marker>
+                    <marker id="arrow-r2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#ffaa00"/>
+                    </marker>
+                    <marker id="arrow-r3" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#aa00ff"/>
+                    </marker>
+
+                    <!-- Gradients for actors -->
+                    <linearGradient id="grad-ict" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#0099cc;stop-opacity:1" />
+                    </linearGradient>
+                    
+                    <linearGradient id="grad-hr" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#00ff88;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#00cc66;stop-opacity:1" />
+                    </linearGradient>
+                    
+                    <linearGradient id="grad-inkoop" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#ffaa00;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#cc8800;stop-opacity:1" />
+                    </linearGradient>
+                    
+                    <linearGradient id="grad-extern" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#aa00ff;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#8800cc;stop-opacity:1" />
+                    </linearGradient>
+                    
+                    <linearGradient id="grad-management" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#ff3366;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#cc0044;stop-opacity:1" />
+                    </linearGradient>
+
+                    <linearGradient id="grad-team" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#4a9eff;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#2266cc;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+
+                <!-- FEEDBACK LOOP R1: Werkdrukcyclus (RED) -->
+                <path class="feedback-loop loop-r1 clickable" data-loop="r1"
+                      d="M 300,250 Q 150,250 150,400 Q 150,550 300,550 Q 450,550 450,400 Q 450,300 350,270"
+                      marker-end="url(#arrow-r1)"
+                      data-tooltip="R1 WERKDRUKCYCLUS: Hoge werkdruk → Uitstel werving → Vacatures blijven open → Externe inhuur → Kennisvertrek → Nog hogere werkdruk"/>
+                
+                <!-- FEEDBACK LOOP R2: Afhankelijkheidscyclus (ORANGE) -->
+                <path class="feedback-loop loop-r2 clickable" data-loop="r2"
+                      d="M 700,400 Q 850,400 900,550 Q 950,700 850,800 Q 750,900 650,850 Q 550,800 600,700"
+                      marker-end="url(#arrow-r2)"
+                      data-tooltip="R2 AFHANKELIJKHEIDSCYCLUS: Vacatures → Externe inhuur → Externen in kernrollen → Structurele afhankelijkheid → Kennisvertrek → Geen interne capaciteit"/>
+
+                <!-- FEEDBACK LOOP R3: Retentiecyclus (PURPLE) -->
+                <path class="feedback-loop loop-r3 clickable" data-loop="r3"
+                      d="M 1100,600 Q 1250,650 1250,800 Q 1250,950 1100,1000 Q 950,1050 900,950"
+                      marker-end="url(#arrow-r3)"
+                      data-tooltip="R3 RETENTIECYCLUS: Externe leidinggevenden → Teamonvrede → Uitstroom kernpersoneel → Capaciteitsverlies → Opnieuw externe leiding"/>
+
+                <!-- ACTOR 1: ICT Afdeling -->
+                <g class="actor clickable" data-actor="ict" data-tooltip="ICT AFDELING: Primaire actor met hoge werkdruk, acute taken, en continue krapte. Drijvende kracht achter externe inhuur.">
+                    <rect class="actor-body" x="250" y="180" width="180" height="120" rx="12" 
+                          fill="url(#grad-ict)" stroke="#00d4ff" stroke-width="2"/>
+                    <text class="actor-label" x="340" y="225" text-anchor="middle" fill="#0a0e27" font-weight="700" font-size="16">ICT AFDELING</text>
+                    <text x="340" y="250" text-anchor="middle" fill="#0a0e27" font-size="12">• Hoge werkdruk</text>
+                    <text x="340" y="270" text-anchor="middle" fill="#0a0e27" font-size="12">• Acute prioriteiten</text>
+                    <text x="340" y="290" text-anchor="middle" fill="#0a0e27" font-size="12">• Structurele krapte</text>
+                </g>
+
+                <!-- ACTOR 2: HR Afdeling -->
+                <g class="actor clickable" data-actor="hr" data-tooltip="HR AFDELING: Verantwoordelijk voor werving & selectie. Formele procedures nemen 3-6 maanden. Beperkte capaciteit tijdens pieken.">
+                    <rect class="actor-body" x="550" y="180" width="180" height="120" rx="12" 
+                          fill="url(#grad-hr)" stroke="#00ff88" stroke-width="2"/>
+                    <text class="actor-label" x="640" y="225" text-anchor="middle" fill="#0a0e27" font-weight="700" font-size="16">HR AFDELING</text>
+                    <text x="640" y="250" text-anchor="middle" fill="#0a0e27" font-size="12">• Werving & selectie</text>
+                    <text x="640" y="270" text-anchor="middle" fill="#0a0e27" font-size="12">• Formele procedures</text>
+                    <text x="640" y="290" text-anchor="middle" fill="#0a0e27" font-size="12">• 3-6 maanden doorloop</text>
+                </g>
+
+                <!-- ACTOR 3: Inkoopafdeling -->
+                <g class="actor clickable" data-actor="inkoop" data-tooltip="INKOOPAFDELING: Beheert externe contracten en leveranciers. Snelle doorlooptijd (2-4 weken). Focus op compliance en tarieven.">
+                    <rect class="actor-body" x="850" y="180" width="180" height="120" rx="12" 
+                          fill="url(#grad-inkoop)" stroke="#ffaa00" stroke-width="2"/>
+                    <text class="actor-label" x="940" y="225" text-anchor="middle" fill="#0a0e27" font-weight="700" font-size="16">INKOOP</text>
+                    <text x="940" y="250" text-anchor="middle" fill="#0a0e27" font-size="12">• Externe contracten</text>
+                    <text x="940" y="270" text-anchor="middle" fill="#0a0e27" font-size="12">• 2-4 weken doorloop</text>
+                    <text x="940" y="290" text-anchor="middle" fill="#0a0e27" font-size="12">• Compliance (DBA)</text>
+                </g>
+
+                <!-- ACTOR 4: Externe ICT'ers -->
+                <g class="actor clickable" data-actor="extern" data-tooltip="EXTERNE ICT'ERS: ZZP'ers en detacheringen in kernrollen. Flexibel inzetbaar maar kennisrisico bij vertrek. Hogere tarieven dan vaste medewerkers.">
+                    <rect class="actor-body" x="700" y="500" width="200" height="140" rx="12" 
+                          fill="url(#grad-extern)" stroke="#aa00ff" stroke-width="2"/>
+                    <text class="actor-label" x="800" y="545" text-anchor="middle" fill="#fff" font-weight="700" font-size="16">EXTERNE ICT'ERS</text>
+                    <text x="800" y="570" text-anchor="middle" fill="#fff" font-size="12">• ZZP / Detachering</text>
+                    <text x="800" y="590" text-anchor="middle" fill="#fff" font-size="12">• Kernrollen (beheer,</text>
+                    <text x="800" y="610" text-anchor="middle" fill="#fff" font-size="12">  architectuur, leiding)</text>
+                    <text x="800" y="630" text-anchor="middle" fill="#fff" font-size="12">• Kennisrisico</text>
+                </g>
+
+                <!-- ACTOR 5: Management / Directie -->
+                <g class="actor clickable" data-actor="management" data-tooltip="MANAGEMENT: Budgethouder en beslisser. Spanning tussen korte termijn oplossingen en lange termijn strategie. Goedkeuring extern/intern.">
+                    <rect class="actor-body" x="250" y="500" width="180" height="120" rx="12" 
+                          fill="url(#grad-management)" stroke="#ff3366" stroke-width="2"/>
+                    <text class="actor-label" x="340" y="545" text-anchor="middle" fill="#fff" font-weight="700" font-size="16">MANAGEMENT</text>
+                    <text x="340" y="570" text-anchor="middle" fill="#fff" font-size="12">• Budgethouder</text>
+                    <text x="340" y="590" text-anchor="middle" fill="#fff" font-size="12">• Besluitvorming</text>
+                    <text x="340" y="610" text-anchor="middle" fill="#fff" font-size="12">• Strategische keuzes</text>
+                </g>
+
+                <!-- ACTOR 6: Intern ICT Team -->
+                <g class="actor clickable" data-actor="team" data-tooltip="INTERN ICT TEAM: Vaste medewerkers met organisatiekennis. Ervaren ongelijkheid qua beloning. Risico op uitstroom naar markt.">
+                    <rect class="actor-body" x="1050" y="820" width="200" height="120" rx="12" 
+                          fill="url(#grad-team)" stroke="#4a9eff" stroke-width="2"/>
+                    <text class="actor-label" x="1150" y="865" text-anchor="middle" fill="#fff" font-weight="700" font-size="16">INTERN TEAM</text>
+                    <text x="1150" y="890" text-anchor="middle" fill="#fff" font-size="12">• Vaste medewerkers</text>
+                    <text x="1150" y="910" text-anchor="middle" fill="#fff" font-size="12">• Organisatiekennis</text>
+                    <text x="1150" y="930" text-anchor="middle" fill="#fff" font-size="12">• Uitstroomrisico</text>
+                </g>
+
+                <!-- RELATIONSHIPS (blue arrows) -->
+                
+                <!-- ICT → HR: Vraag om personeel -->
+                <path class="relationship" d="M 430,240 L 550,240" 
+                      data-tooltip="RELATIE: ICT vraagt HR om personeel te werven"/>
+                
+                <!-- HR → ICT: Lange doorlooptijd -->
+                <path class="relationship" d="M 640,300 Q 485,350 430,280" 
+                      data-tooltip="RELATIE: HR werving duurt te lang (3-6 mnd), frustratie bij ICT"/>
+                
+                <!-- ICT → Inkoop: Vraag om externe inhuur -->
+                <path class="relationship" d="M 430,200 Q 640,150 850,200" 
+                      data-tooltip="RELATIE: ICT vraagt Inkoop om snel externe capaciteit"/>
+                
+                <!-- Inkoop → Externe ICT'ers: Contracten -->
+                <path class="relationship" d="M 940,300 L 800,500" 
+                      data-tooltip="RELATIE: Inkoop regelt contracten met externe ICT'ers"/>
+                
+                <!-- Management → ICT: Budgetdruk & targets -->
+                <path class="relationship" d="M 340,500 L 340,300" 
+                      data-tooltip="RELATIE: Management zet druk op ICT voor resultaten en budgetcontrole"/>
+                
+                <!-- Management → HR: Instellingsbeleid -->
+                <path class="relationship" d="M 430,540 L 550,270" 
+                      data-tooltip="RELATIE: Management stuurt HR op personeelsbeleid"/>
+                
+                <!-- Management → Inkoop: Budgetgoedkeuring -->
+                <path class="relationship" d="M 430,520 Q 640,400 850,250" 
+                      data-tooltip="RELATIE: Management keurt externe inhuurbudget goed"/>
+                
+                <!-- Externe ICT'ers → ICT: Capaciteit -->
+                <path class="relationship" d="M 700,550 Q 500,400 430,270" 
+                      data-tooltip="RELATIE: Externen leveren tijdelijke capaciteit aan ICT"/>
+                
+                <!-- Externe ICT'ers → Intern Team: Interactie & spanning -->
+                <path class="relationship" d="M 900,620 Q 1000,720 1050,860" 
+                      data-tooltip="RELATIE: Externen werken met intern team, veroorzaken beloningsspanning"/>
+                
+                <!-- Intern Team → ICT: Uitstroom -->
+                <path class="relationship" d="M 1050,880 Q 700,700 430,290" 
+                      data-tooltip="RELATIE: Interne medewerkers verlaten ICT wegens onvrede (R3)"/>
+
+                <!-- INFLUENCES (dashed grey lines) -->
+                
+                <!-- Externe context → HR -->
+                <line class="influence" x1="640" y1="80" x2="640" y2="180" 
+                      data-tooltip="INVLOED: Arbeidsmarktkrapte beperkt HR's werving"/>
+                
+                <!-- Externe context → Inkoop -->
+                <line class="influence" x1="940" y1="80" x2="940" y2="180" 
+                      data-tooltip="INVLOED: Wet DBA en juridische kaders beïnvloeden Inkoop"/>
+                
+                <!-- Wet DBA → Inkoop (stronger) -->
+                <path class="influence" d="M 1100,100 L 1000,200" stroke-width="2" opacity="0.8"
+                      data-tooltip="INVLOED: Wet DBA compliance-eis op Inkoop"/>
+
+                <!-- INTERVENTION I1: Duo-constructie -->
+                <g class="intervention clickable" data-intervention="i1" data-tooltip="INTERVENTIE I1: DUO-CONSTRUCTIE - Junior + extern voor kennisoverdracht. Doorbreekt R2 door interne capaciteit op te bouwen.">
+                    <circle class="intervention-marker" cx="650" cy="700" r="35" fill="#00ff88" stroke="#00cc66" stroke-width="3"/>
+                    <text x="650" y="695" text-anchor="middle" fill="#0a0e27" font-weight="700" font-size="18">I1</text>
+                    <text x="650" y="713" text-anchor="middle" fill="#0a0e27" font-weight="600" font-size="11">DUO</text>
+                </g>
+                <!-- I1 intervention line to Externe ICT'ers and Intern Team -->
+                <line x1="670" y1="720" x2="750" y2="600" stroke="#00ff88" stroke-width="3" stroke-dasharray="5,5"/>
+                <line x1="670" y1="720" x2="1050" y2="870" stroke="#00ff88" stroke-width="3" stroke-dasharray="5,5"/>
+
+                <!-- INTERVENTION I2: Temp-to-hire -->
+                <g class="intervention clickable" data-intervention="i2" data-tooltip="INTERVENTIE I2: TEMP-TO-HIRE - Externen met vast contract perspectief. Vermindert R2 en R3 door kennisbehoud en cultuurfit.">
+                    <circle class="intervention-marker" cx="950" cy="700" r="35" fill="#4a9eff" stroke="#2266cc" stroke-width="3"/>
+                    <text x="950" y="695" text-anchor="middle" fill="#fff" font-weight="700" font-size="18">I2</text>
+                    <text x="950" y="713" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">T2H</text>
+                </g>
+                <!-- I2 intervention line to Externe ICT'ers -->
+                <line x1="920" y1="680" x2="850" y2="640" stroke="#4a9eff" stroke-width="3" stroke-dasharray="5,5"/>
+
+                <!-- INTERVENTION I3: ICT-HR-Inkoop overleg -->
+                <g class="intervention clickable" data-intervention="i3" data-tooltip="INTERVENTIE I3: ICT-HR-INKOOP OVERLEG - Gestructureerde besluitvorming. Doorbreekt silo's en verbetert extern/intern afweging.">
+                    <circle class="intervention-marker" cx="640" cy="380" r="35" fill="#ffaa00" stroke="#cc8800" stroke-width="3"/>
+                    <text x="640" y="375" text-anchor="middle" fill="#0a0e27" font-weight="700" font-size="18">I3</text>
+                    <text x="640" y="393" text-anchor="middle" fill="#0a0e27" font-weight="600" font-size="10">OVERLEG</text>
+                </g>
+                <!-- I3 intervention lines connecting three departments -->
+                <line x1="610" y1="360" x2="430" y2="250" stroke="#ffaa00" stroke-width="3" stroke-dasharray="5,5"/>
+                <line x1="640" y1="345" x2="640" y2="300" stroke="#ffaa00" stroke-width="3" stroke-dasharray="5,5"/>
+                <line x1="670" y1="360" x2="850" y2="250" stroke="#ffaa00" stroke-width="3" stroke-dasharray="5,5"/>
+
+                <!-- External context label -->
+                <rect x="500" y="40" width="400" height="60" rx="8" fill="#1a1f3a" stroke="#3d4775" stroke-width="2"/>
+                <text x="700" y="65" text-anchor="middle" fill="#8b95b0" font-weight="600" font-size="13">EXTERNE CONTEXT</text>
+                <text x="700" y="85" text-anchor="middle" fill="#8b95b0" font-size="11">Arbeidsmarktkrapte • Wet DBA • Juridische kaders</text>
+
+                <!-- R1, R2, R3 Labels on loops -->
+                <g class="critical">
+                    <circle cx="220" cy="400" r="30" fill="#ff3366" opacity="0.2"/>
+                    <text x="220" y="408" text-anchor="middle" fill="#ff3366" font-weight="700" font-size="20">R1</text>
+                </g>
+
+                <g class="critical">
+                    <circle cx="920" cy="750" r="30" fill="#ffaa00" opacity="0.2"/>
+                    <text x="920" y="758" text-anchor="middle" fill="#ffaa00" font-weight="700" font-size="20">R2</text>
+                </g>
+
+                <g class="critical">
+                    <circle cx="1180" cy="800" r="30" fill="#aa00ff" opacity="0.2"/>
+                    <text x="1180" y="808" text-anchor="middle" fill="#aa00ff" font-weight="700" font-size="20">R3</text>
+                </g>
+
+                <!-- Process elements in system -->
+                <!-- Vacatures box -->
+                <rect x="200" y="380" width="140" height="50" rx="8" fill="#2d3561" stroke="#4a9eff" stroke-width="1.5"/>
+                <text x="270" y="410" text-anchor="middle" fill="#e0e6ed" font-size="12" font-weight="600">Vacatures open</text>
+
+                <!-- Kennisvertrek box -->
+                <rect x="480" y="750" width="160" height="50" rx="8" fill="#2d3561" stroke="#ff3366" stroke-width="1.5"/>
+                <text x="560" y="780" text-anchor="middle" fill="#e0e6ed" font-size="12" font-weight="600">Kennisvertrek</text>
+
+                <!-- Teamonvrede box -->
+                <rect x="1070" y="1000" width="160" height="50" rx="8" fill="#2d3561" stroke="#aa00ff" stroke-width="1.5"/>
+                <text x="1150" y="1030" text-anchor="middle" fill="#e0e6ed" font-size="12" font-weight="600">Teamonvrede</text>
+
+                <!-- System boundary -->
+                <rect x="180" y="150" width="900" height="520" rx="16" fill="none" stroke="#3d4775" stroke-width="2" stroke-dasharray="10,5" opacity="0.5"/>
+                <text x="630" y="140" text-anchor="middle" fill="#8b95b0" font-size="13" font-weight="600">PRIMAIR SYSTEEM: ICT-afdeling en directe omgeving</text>
+            </svg>
+        </div>
+
+        <div class="legend">
+            <h2 class="legend-title">⚡ Legenda: Systeemelementen</h2>
+            <div class="legend-grid">
+                <!-- Actors -->
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: linear-gradient(135deg, #00d4ff, #0099cc);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="3" width="18" height="18" rx="3" stroke="white" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="legend-text">
+                        <span class="legend-label">Actoren (6 stuks)</span>
+                        <span class="legend-description">Primaire spelers in het systeem met hun rollen en kenmerken</span>
+                    </div>
+                </div>
+
+                <!-- Relationships -->
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #1a1f3a;">
+                        <svg width="30" height="12">
+                            <line x1="0" y1="6" x2="25" y2="6" stroke="#4a9eff" stroke-width="2.5"/>
+                            <polygon points="25,3 30,6 25,9" fill="#4a9eff"/>
+                        </svg>
+                    </div>
+                    <div class="legend-text">
+                        <span class="legend-label">Relaties (blauw)</span>
+                        <span class="legend-description">Directe interacties tussen actoren (vraag, levering, druk)</span>
+                    </div>
+                </div>
+
+                <!-- Influences -->
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #1a1f3a;">
+                        <svg width="30" height="12">
+                            <line x1="0" y1="6" x2="30" y2="6" stroke="#7c8ba1" stroke-width="1.5" stroke-dasharray="4,3"/>
+                        </svg>
+                    </div>
+                    <div class="legend-text">
+                        <span class="legend-label">Invloeden (grijs gestippeld)</span>
+                        <span class="legend-description">Externe factoren die actoren beïnvloeden</span>
+                    </div>
+                </div>
+
+                <!-- Feedback R1 -->
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #1a1f3a;">
+                        <svg width="30" height="20">
+                            <path d="M 5,10 Q 15,5 25,10" stroke="#ff3366" stroke-width="3" fill="none" stroke-dasharray="6,3"/>
+                            <circle cx="3" cy="10" r="8" fill="#ff3366" opacity="0.3"/>
+                            <text x="3" y="13" text-anchor="middle" fill="#ff3366" font-size="9" font-weight="700">R1</text>
+                        </svg>
+                    </div>
+                    <div class="legend-text">
+                        <span class="legend-label">R1: Werkdrukcyclus (rood)</span>
+                        <span class="legend-description">Hoge werkdruk → uitstel werving → vacatures → externe inhuur → kennisvertrek → hogere werkdruk</span>
+                    </div>
+                </div>
+
+                <!-- Feedback R2 -->
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #1a1f3a;">
+                        <svg width="30" height="20">
+                            <path d="M 5,10 Q 15,5 25,10" stroke="#ffaa00" stroke-width="3" fill="none" stroke-dasharray="6,3"/>
+                            <circle cx="3" cy="10" r="8" fill="#ffaa00" opacity="0.3"/>
+                            <text x="3" y="13" text-anchor="middle" fill="#ffaa00" font-size="9" font-weight="700">R2</text>
+                        </svg>
+                    </div>
+                    <div class="legend-text">
+                        <span class="legend-label">R2: Afhankelijkheidscyclus (oranje)</span>
+                        <span class="legend-description">Vacatures → externe inhuur → kernrollen → afhankelijkheid → kennisvertrek → geen interne capaciteit</span>
+                    </div>
+                </div>
+
+                <!-- Feedback R3 -->
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #1a1f3a;">
+                        <svg width="30" height="20">
+                            <path d="M 5,10 Q 15,5 25,10" stroke="#aa00ff" stroke-width="3" fill="none" stroke-dasharray="6,3"/>
+                            <circle cx="3" cy="10" r="8" fill="#aa00ff" opacity="0.3"/>
+                            <text x="3" y="13" text-anchor="middle" fill="#aa00ff" font-size="9" font-weight="700">R3</text>
+                        </svg>
+                    </div>
+                    <div class="legend-text">
+                        <span class="legend-label">R3: Retentiecyclus (paars)</span>
+                        <span class="legend-description">Externe leiding → teamonvrede → uitstroom kernpersoneel → capaciteitsverlies → opnieuw externe leiding</span>
+                    </div>
+                </div>
+
+                <!-- Intervention I1 -->
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #00ff88;">
+                        <svg width="24" height="24">
+                            <circle cx="12" cy="12" r="10" fill="#00ff88" stroke="#00cc66" stroke-width="2"/>
+                            <text x="12" y="16" text-anchor="middle" fill="#0a0e27" font-size="11" font-weight="700">I1</text>
+                        </svg>
+                    </div>
+                    <div class="legend-text">
+                        <span class="legend-label">I1: Duo-constructie (groen)</span>
+                        <span class="legend-description">Junior + extern voor kennisoverdracht. Grijpt aan op R2 (afhankelijkheid)</span>
+                    </div>
+                </div>
+
+                <!-- Intervention I2 -->
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #4a9eff;">
+                        <svg width="24" height="24">
+                            <circle cx="12" cy="12" r="10" fill="#4a9eff" stroke="#2266cc" stroke-width="2"/>
+                            <text x="12" y="16" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">I2</text>
+                        </svg>
+                    </div>
+                    <div class="legend-text">
+                        <span class="legend-label">I2: Temp-to-hire (blauw)</span>
+                        <span class="legend-description">Extern met vast perspectief. Grijpt aan op R2 en R3 (kennisbehoud, cultuurfit)</span>
+                    </div>
+                </div>
+
+                <!-- Intervention I3 -->
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #ffaa00;">
+                        <svg width="24" height="24">
+                            <circle cx="12" cy="12" r="10" fill="#ffaa00" stroke="#cc8800" stroke-width="2"/>
+                            <text x="12" y="16" text-anchor="middle" fill="#0a0e27" font-size="11" font-weight="700">I3</text>
+                        </svg>
+                    </div>
+                    <div class="legend-text">
+                        <span class="legend-label">I3: ICT-HR-Inkoop overleg (oranje)</span>
+                        <span class="legend-description">Gestructureerde besluitvorming. Doorbreekt silo's tussen afdelingen, verbetert extern/intern afweging</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3 class="info-title">🎯 Systeemarchetype: "Shifting the Burden"</h3>
+            <div class="info-content">
+                Het systeem toont een klassiek <strong>"Shifting the Burden"</strong> patroon waarbij de symptomatische oplossing (externe inhuur) herhaaldelijk wordt gekozen boven de fundamentele oplossing (interne capaciteitsopbouw). De drie feedbackloops versterken elkaar:
+                <br><br>
+                <strong>R1</strong> creëert tijdsdruk die snelle oplossingen afdwingt • <strong>R2</strong> bouwt structurele afhankelijkheid op van externe capaciteit • <strong>R3</strong> erodeerd de interne capaciteit verder door uitstroom
+                <br><br>
+                De drie interventies (I1, I2, I3) zijn strategisch gepositioneerd om deze versterkende cycli te doorbreken door <strong>kennisoverdracht te forceren</strong>, <strong>externe capaciteit te converteren naar interne capaciteit</strong>, en <strong>besluitvorming te verbeteren</strong> tussen de silo's.
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip element -->
+    <div class="tooltip" id="tooltip">
+        <div class="tooltip-title"></div>
+        <div class="tooltip-content"></div>
+    </div>
+
+    <!-- Modal for detailed information -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">×</button>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // Tooltip functionality
+        const tooltip = document.getElementById('tooltip');
+        const elements = document.querySelectorAll('[data-tooltip]');
+
+        elements.forEach(element => {
+            element.addEventListener('mouseenter', (e) => {
+                const tooltipText = element.getAttribute('data-tooltip');
+                const parts = tooltipText.split(':');
+                
+                if (parts.length > 1) {
+                    tooltip.querySelector('.tooltip-title').textContent = parts[0] + ':';
+                    tooltip.querySelector('.tooltip-content').textContent = parts[1].trim();
+                } else {
+                    tooltip.querySelector('.tooltip-title').textContent = '';
+                    tooltip.querySelector('.tooltip-content').textContent = tooltipText;
+                }
+                
+                tooltip.classList.add('active');
+            });
+
+            element.addEventListener('mousemove', (e) => {
+                tooltip.style.left = (e.clientX + 20) + 'px';
+                tooltip.style.top = (e.clientY + 20) + 'px';
+            });
+
+            element.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('active');
+            });
+        });
+
+        // Modal functionality
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const modalClose = document.getElementById('modalClose');
+
+        // Modal content database
+        const modalContent = {
+            // Actors
+            ict: {
+                title: 'ICT Afdeling',
+                sections: [
+                    {
+                        title: 'Rol in het systeem',
+                        content: 'De ICT-afdeling is de primaire actor die de vraag naar externe inhuur initieert. Door continue hoge werkdruk en acute prioriteiten ontstaat er structurele krapte die niet door reguliere werving kan worden opgelost.'
+                    },
+                    {
+                        title: 'Kenmerken',
+                        list: [
+                            'Chronische hoge werkdruk door tekort aan personeel',
+                            'Focus op acute prioriteiten boven structurele oplossingen',
+                            'Beperkte tijd voor inwerktrajecten nieuwe medewerkers',
+                            'Voorkeur voor snelle oplossingen via externe inhuur'
+                        ]
+                    },
+                    {
+                        title: 'Risicoprofiel',
+                        content: 'De ICT-afdeling bevindt zich in het hart van alle drie de risicocycli (R1, R2, R3). De continue werkdruk dwingt tot korte-termijn oplossingen, waardoor structurele problemen verergeren.',
+                        badge: 'risk-high',
+                        badgeText: 'Risico: Hoog'
+                    },
+                    {
+                        title: 'Betrokken feedbackloops',
+                        content: 'R1 (Werkdrukcyclus): Start- en eindpunt | R2 (Afhankelijkheid): Drijvende kracht | R3 (Retentie): Indirect via werkdruk op intern team'
+                    }
+                ]
+            },
+            hr: {
+                title: 'HR Afdeling',
+                sections: [
+                    {
+                        title: 'Rol in het systeem',
+                        content: 'HR is verantwoordelijk voor werving en selectie volgens formele procedures. De doorlooptijd van 3-6 maanden voor nieuwe medewerkers botst met de urgentie van ICT, waardoor externe inhuur aantrekkelijker wordt.'
+                    },
+                    {
+                        title: 'Kenmerken',
+                        list: [
+                            'Gebonden aan formele wervings- en selectieprocedures',
+                            'Doorlooptijd 3-6 maanden voor nieuwe medewerkers',
+                            'Beperkte capaciteit tijdens wervingspieken',
+                            'Compliance-verantwoordelijkheid arbeidsrecht'
+                        ]
+                    },
+                    {
+                        title: 'Risicoprofiel',
+                        content: 'HR wordt vaak omzeild door ICT en Inkoop, wat leidt tot verminderde controle over personeelssamenstelling en mogelijke compliance-risico\'s.',
+                        badge: 'risk-medium',
+                        badgeText: 'Risico: Gemiddeld'
+                    },
+                    {
+                        title: 'Rol in interventies',
+                        content: 'HR is cruciaal voor I3 (ICT-HR-Inkoop overleg) om betere afstemming te bereiken tussen externe inhuur en structurele werving.'
+                    }
+                ]
+            },
+            inkoop: {
+                title: 'Inkoopafdeling',
+                sections: [
+                    {
+                        title: 'Rol in het systeem',
+                        content: 'Inkoop faciliteert externe inhuur met een snelle doorlooptijd van 2-4 weken. Dit maakt Inkoop een attractieve route voor ICT om snel capaciteit te regelen, maar omzeilt daarmee HR-processen.'
+                    },
+                    {
+                        title: 'Kenmerken',
+                        list: [
+                            'Snelle doorlooptijd: 2-4 weken voor externe inhuur',
+                            'Beheer van contracten met ZZP\'ers en detacheringsbureaus',
+                            'Verantwoordelijk voor Wet DBA compliance',
+                            'Focus op tariefonderhandeling en contractvoorwaarden'
+                        ]
+                    },
+                    {
+                        title: 'Risicoprofiel',
+                        content: 'Inkoop draagt compliance-risico voor Wet DBA en juridische aansprakelijkheid. De focus op snelheid kan leiden tot suboptimale long-term beslissingen.',
+                        badge: 'risk-medium',
+                        badgeText: 'Risico: Gemiddeld (Compliance)'
+                    },
+                    {
+                        title: 'Externe druk',
+                        content: 'Inkoop wordt sterk beïnvloed door Wet DBA en juridische kaders rond ZZP-inzet, wat extra compliance-checks vereist.'
+                    }
+                ]
+            },
+            extern: {
+                title: 'Externe ICT\'ers',
+                sections: [
+                    {
+                        title: 'Rol in het systeem',
+                        content: 'Externe ICT\'ers (ZZP\'ers en gedetacheerden) vervullen vaak kernrollen in beheer, architectuur en zelfs leidinggevende functies. Ze bieden flexibiliteit maar creëren ook structurele afhankelijkheid.'
+                    },
+                    {
+                        title: 'Kenmerken',
+                        list: [
+                            'Flexibel inzetbaar voor specifieke projecten of rollen',
+                            'Hogere uurtarieven dan vaste medewerkers',
+                            'Beperkte loyaliteit en organisatiebinding',
+                            'Kernrollen: beheer, architectuur, technische leiding',
+                            'Kennisrisico bij vertrek'
+                        ]
+                    },
+                    {
+                        title: 'Risicoprofiel',
+                        content: 'Externe ICT\'ers zijn het centrale element in R2 (Afhankelijkheidscyclus). Bij vertrek verdwijnt kritieke kennis, wat de organisatie kwetsbaar maakt.',
+                        badge: 'risk-high',
+                        badgeText: 'Risico: Hoog (Kennisvertrek)'
+                    },
+                    {
+                        title: 'Interventiekansen',
+                        content: 'I1 (Duo-constructie) en I2 (Temp-to-hire) richten zich op het mitigeren van kennisrisico door externe ICT\'ers te koppelen aan interne medewerkers of te converteren naar vast personeel.'
+                    }
+                ]
+            },
+            management: {
+                title: 'Management / Directie',
+                sections: [
+                    {
+                        title: 'Rol in het systeem',
+                        content: 'Management is budgethouder en eindverantwoordelijk voor strategische personeelsbeslissingen. Er bestaat spanning tussen korte-termijn resultaten (via externe inhuur) en lange-termijn organisatieontwikkeling.'
+                    },
+                    {
+                        title: 'Kenmerken',
+                        list: [
+                            'Budgetverantwoordelijkheid voor personeel en externe inhuur',
+                            'Goedkeuring vereist voor inhuurcontracten boven bepaald bedrag',
+                            'Strategische keuzes tussen extern/intern',
+                            'Druk op ICT voor resultaten en kostenbewaking',
+                            'Beperkt zicht op operationele impact van beslissingen'
+                        ]
+                    },
+                    {
+                        title: 'Risicoprofiel',
+                        content: 'Management staat onder druk om korte-termijn resultaten te leveren, wat de voorkeur voor externe inhuur versterkt. Dit creëert een valstrik waar structurele problemen blijven voortbestaan.',
+                        badge: 'risk-high',
+                        badgeText: 'Risico: Hoog (Strategisch)'
+                    },
+                    {
+                        title: 'Besluitvormingsdilemma',
+                        content: 'Management moet afwegen tussen: (1) Snelle resultaten via externe inhuur met hogere kosten, (2) Langzame maar structurele oplossing via werving met lagere long-term kosten.'
+                    }
+                ]
+            },
+            team: {
+                title: 'Intern ICT Team',
+                sections: [
+                    {
+                        title: 'Rol in het systeem',
+                        content: 'Het interne ICT team bestaat uit vaste medewerkers met organisatiekennis en loyaliteit. Ze ervaren echter ongelijkheid in beloning ten opzichte van externe collega\'s, wat uitstroomrisico creëert.'
+                    },
+                    {
+                        title: 'Kenmerken',
+                        list: [
+                            'Vaste dienstverbanden met lagere salarissen dan externen',
+                            'Organisatiekennis en historisch overzicht',
+                            'Ervaren ongelijkheid qua waardering en beloning',
+                            'Uitstroomrisico naar markt (vaak als ZZP\'er)',
+                            'Dragen van werkdruk tijdens vacatures'
+                        ]
+                    },
+                    {
+                        title: 'Risicoprofiel',
+                        content: 'Het interne team is kwetsbaar voor R3 (Retentiecyclus). Onvrede over beloningsverschillen met externen kan leiden tot uitstroom van kernpersoneel, wat het probleem verergert.',
+                        badge: 'risk-high',
+                        badgeText: 'Risico: Hoog (Uitstroom)'
+                    },
+                    {
+                        title: 'Impact van interventies',
+                        content: 'I1 (Duo-constructie) kan het interne team versterken door ontwikkeling en kennisoverdracht. I2 (Temp-to-hire) kan als eerlijk worden ervaren omdat externen ook vastgesteld kunnen worden.'
+                    }
+                ]
+            },
+            // Feedback loops
+            r1: {
+                title: 'R1: Werkdrukcyclus',
+                sections: [
+                    {
+                        title: 'Beschrijving feedbackloop',
+                        content: 'De werkdrukcyclus is een zelfversterkende negatieve spiraal waarbij hoge werkdruk leidt tot uitstel van structurele oplossingen, wat de werkdruk verder verhoogt.'
+                    },
+                    {
+                        title: 'Cyclus stappen',
+                        list: [
+                            '1. Hoge werkdruk bij ICT afdeling',
+                            '2. "Geen tijd om in te werken" → Uitstel van werving',
+                            '3. Vacatures blijven langer open',
+                            '4. Snelle oplossing via externe inhuur',
+                            '5. Externen vertrekken zonder kennisoverdracht',
+                            '6. Nog hogere werkdruk door kennislek → Terug naar stap 1'
+                        ]
+                    },
+                    {
+                        title: 'Versterkende factoren',
+                        content: 'Mentaal model "geen tijd om in te werken" wordt bevestigd door acute prioriteiten. Management versterkt dit door druk voor snelle resultaten. Tijdsverschil tussen externe inhuur (2-4 weken) en interne werving (3-6 maanden) maakt externe inhuur aantrekkelijker.'
+                    },
+                    {
+                        title: 'Risico-impact',
+                        content: 'R1 creëert een chronische staat van crisis-management waarbij alleen symptomen worden bestreden. Dit leidt tot burnout-risico, kwaliteitsverlies en uiteindelijk tot R2 en R3.',
+                        badge: 'risk-high',
+                        badgeText: 'Impact: Kritiek'
+                    },
+                    {
+                        title: 'Interventies die aangrijpen',
+                        content: 'I3 (ICT-HR-Inkoop overleg) kan R1 doorbreken door bewuste afwegingen te forceren tussen extern en intern, en door realistische planning van inwerkperiodes.'
+                    }
+                ]
+            },
+            r2: {
+                title: 'R2: Afhankelijkheidscyclus',
+                sections: [
+                    {
+                        title: 'Beschrijving feedbackloop',
+                        content: 'De afhankelijkheidscyclus beschrijft hoe tijdelijke externe inhuur evolueert naar structurele afhankelijkheid van externe capaciteit, met kennisrisico als gevolg.'
+                    },
+                    {
+                        title: 'Cyclus stappen',
+                        list: [
+                            '1. Vacatures ontstaan door capaciteitstekort',
+                            '2. Externe inhuur via Inkoop (snel, 2-4 weken)',
+                            '3. Externen nemen kernrollen in (beheer, architectuur)',
+                            '4. Structurele afhankelijkheid ontstaat',
+                            '5. Kennisvertrek bij einde contract',
+                            '6. Geen interne capaciteitsopbouw → Nieuwe vacatures → Terug naar stap 1'
+                        ]
+                    },
+                    {
+                        title: 'Versterkende factoren',
+                        content: 'Projectbudgetten maken externe inhuur financieel aantrekkelijk. Vendor lock-in: specifieke kennis bij individuele externen. Gebrek aan documentatie en kennisoverdracht. Mentaal model "externe inhuur geeft flexibiliteit" wordt bevestigd.'
+                    },
+                    {
+                        title: 'Risico-impact',
+                        content: 'R2 creëert strategische kwetsbaarheid: de organisatie verliest controle over kritieke ICT-functies. Vendor lock-in en kennismonopolies bij individuele externen vergroten afhankelijkheid.',
+                        badge: 'risk-high',
+                        badgeText: 'Impact: Kritiek (Strategisch)'
+                    },
+                    {
+                        title: 'Interventies die aangrijpen',
+                        content: 'I1 (Duo-constructie): Koppelt junior aan extern voor kennisoverdracht. I2 (Temp-to-hire): Converteert externe capaciteit naar intern personeel. Beide doorbreken de cyclus door interne capaciteit op te bouwen.'
+                    }
+                ]
+            },
+            r3: {
+                title: 'R3: Retentie- en Leiderschapscyclus',
+                sections: [
+                    {
+                        title: 'Beschrijving feedbackloop',
+                        content: 'De retentiecyclus beschrijft hoe externe leidinggevenden en beloningsverschillen leiden tot onvrede bij intern personeel, wat uitstroom veroorzaakt en het probleem verergert.'
+                    },
+                    {
+                        title: 'Cyclus stappen',
+                        list: [
+                            '1. Externe leidinggevenden ingehuurd (hoge tarieven)',
+                            '2. Intern team ervaart ongelijkheid en lagere waardering',
+                            '3. Onvrede en verminderde binding bij intern personeel',
+                            '4. Uitstroom van kernpersoneel naar markt',
+                            '5. Nog meer capaciteitsverlies en kennisvertrek',
+                            '6. Opnieuw externe leiding nodig → Terug naar stap 1'
+                        ]
+                    },
+                    {
+                        title: 'Psychologische factoren',
+                        content: 'Waargenomen onrechtvaardigheid: externen verdienen 2-3x meer voor vergelijkbaar werk. Erosie van werkgeversmerk en loyaliteit. Domino-effect: vertrek van één kernmedewerker triggert meerdere vertrekt­en. Interne medewerkers worden zelf ZZP\'er om hogere tarieven te krijgen.'
+                    },
+                    {
+                        title: 'Risico-impact',
+                        content: 'R3 bedreigt de continuïteit van het kernteam. Verlies van organisatiekennis en culturele cohesie. Reputatieschade als werkgever op de markt.',
+                        badge: 'risk-high',
+                        badgeText: 'Impact: Zeer Hoog (Continuïteit)'
+                    },
+                    {
+                        title: 'Interventies die aangrijpen',
+                        content: 'I2 (Temp-to-hire) kan R3 mitigeren door externe leidinggevenden perspectief op vast dienstverband te bieden, wat als eerlijker wordt ervaren. I3 (Overleg) kan transparantie creëren over extern/intern beslissingen.'
+                    }
+                ]
+            },
+            // Interventions
+            i1: {
+                title: 'I1: Duo-constructie',
+                sections: [
+                    {
+                        title: 'Beschrijving interventie',
+                        content: 'De duo-constructie koppelt een junior interne medewerker aan een ervaren externe ICT\'er. Dit forceert kennisoverdracht en bouwt interne capaciteit op, waardoor R2 (Afhankelijkheid) wordt doorbroken.'
+                    },
+                    {
+                        title: 'Implementatie',
+                        list: [
+                            'Externe ICT\'er + junior vast medewerker werken samen',
+                            'Expliciete kennisoverdracht als contractvereiste voor extern',
+                            'Junior ontwikkelt expertise in kernrollen',
+                            'Na 6-12 maanden kan junior de rol overnemen',
+                            'Extern verlaat met achtergelaten kennis'
+                        ]
+                    },
+                    {
+                        title: 'Risicomitigatie',
+                        content: 'Deze interventie grijpt direct aan op R2 door te voorkomen dat kennis verdwijnt bij vertrek van de externe medewerker. Het bouwt structurele interne capaciteit op in plaats van tijdelijk externe capaciteit in te huren.',
+                        badge: 'risk-low',
+                        badgeText: 'Mitigatie: R2 (Afhankelijkheid)'
+                    },
+                    {
+                        title: 'Succesfactoren',
+                        list: [
+                            'Extern moet didactische vaardigheden hebben',
+                            'Junior moet gemotiveerd en leergierig zijn',
+                            'Management moet tijd en ruimte geven voor kennisoverdracht',
+                            'Duidelijke documentatie-eisen stellen',
+                            'Evaluatie na 3, 6 en 12 maanden'
+                        ]
+                    },
+                    {
+                        title: 'Uitdagingen',
+                        content: 'Hogere initiële kosten (extern + junior). Tijdsinvestering voor kennisoverdracht. Risico dat junior vertrekt na opleiding. Vereist commitment van alle partijen.'
+                    }
+                ]
+            },
+            i2: {
+                title: 'I2: Temp-to-hire / Detachering',
+                sections: [
+                    {
+                        title: 'Beschrijving interventie',
+                        content: 'Temp-to-hire contracteert externe ICT\'ers met expliciet perspectief op een vast dienstverband. Dit vermindert R2 (Afhankelijkheid) en R3 (Retentie) door kennis te behouden en cultuurfit te testen.'
+                    },
+                    {
+                        title: 'Implementatie',
+                        list: [
+                            'Externe ICT\'er start met tijdelijk contract (6-12 maanden)',
+                            'Expliciete intentie voor vast contract bij goede performance',
+                            'Cultuur- en competentie-evaluatie tijdens tijdelijke periode',
+                            'Conversie naar vast dienstverband na evaluatie',
+                            'Kennis blijft behouden in organisatie'
+                        ]
+                    },
+                    {
+                        title: 'Risicomitigatie',
+                        content: 'I2 grijpt aan op R2 door externe kennis om te zetten in interne kennis. Het mitigeert ook R3 doordat het als eerlijker wordt ervaren door intern team: externen krijgen geen permanent voorkeursbehandeling.',
+                        badge: 'risk-low',
+                        badgeText: 'Mitigatie: R2 + R3'
+                    },
+                    {
+                        title: 'Voordelen',
+                        list: [
+                            'Snelle start zoals bij externe inhuur (2-4 weken)',
+                            'Cultuurfit testen voor vast contract',
+                            'Kennisbehoud bij conversie naar vast',
+                            'Eerlijker ervaren door intern team',
+                            'Lagere long-term kosten dan permanente externe inhuur'
+                        ]
+                    },
+                    {
+                        title: 'Succesfactoren',
+                        content: 'Duidelijke criteria voor conversie naar vast. Competitief salaris (tussen extern tarief en normaal vast). Transparantie naar intern team over temp-to-hire aanpak. Commitment van HR en Management.'
+                    }
+                ]
+            },
+            i3: {
+                title: 'I3: ICT-HR-Inkoop Overleg',
+                sections: [
+                    {
+                        title: 'Beschrijving interventie',
+                        content: 'Het ICT-HR-Inkoop overleg is een gestructureerde besluitvormingsroutine waarbij alle drie de afdelingen gezamenlijk besluiten over werving (intern vs extern). Dit doorbreekt silo-denken en verbetert besluitvorming.'
+                    },
+                    {
+                        title: 'Implementatie',
+                        list: [
+                            'Maandelijks overleg tussen ICT, HR en Inkoop',
+                            'Bespreking van alle vacatures en inhuur­behoeften',
+                            'Gezamenlijke afweging extern vs intern o.b.v. criteria',
+                            'Transparantie over doorlooptijden en kosten',
+                            'Besluitvorming gedocumenteerd en gemonitord'
+                        ]
+                    },
+                    {
+                        title: 'Risicomitigatie',
+                        content: 'I3 grijpt aan op R1 (Werkdruk) door bewuste planning te forceren en realistische verwachtingen te stellen. Het verbetert de balans tussen snel (extern) en structureel (intern).',
+                        badge: 'risk-medium',
+                        badgeText: 'Mitigatie: R1 (Werkdruk) + Silo\'s'
+                    },
+                    {
+                        title: 'Besluitvormingscriteria',
+                        list: [
+                            'Urgentie: Hoeveel tijd is er echt?',
+                            'Duur: Tijdelijk project vs structurele rol?',
+                            'Kennis: Kritieke kennis die behouden moet blijven?',
+                            'Kosten: Total Cost of Ownership extern vs intern',
+                            'Beschikbaarheid: Kan HR tijdig leveren?'
+                        ]
+                    },
+                    {
+                        title: 'Voordelen',
+                        content: 'Doorbreekt silo-denken tussen afdelingen. Verbetert strategische personeelsplanning. Voorkomt ad-hoc externe inhuur zonder overwegingen. Creëert transparantie en gezamenlijke verantwoordelijkheid. Bouwt begrip tussen afdelingen voor elkaars beperkingen.'
+                    },
+                    {
+                        title: 'Succesfactoren',
+                        content: 'Management backing en commitment. Duidelijk besluitvormingsmandat voor het overleg. Data-gedreven discussie (cijfers over kosten, doorlooptijden). Opvolging van genomen besluiten. Evaluatie van effectiviteit elke 6 maanden.'
+                    }
+                ]
+            }
+        };
+
+        // Click handlers for actors
+        document.querySelectorAll('.actor[data-actor]').forEach(actor => {
+            actor.addEventListener('click', (e) => {
+                const actorId = actor.getAttribute('data-actor');
+                showModal(modalContent[actorId]);
+            });
+        });
+
+        // Click handlers for feedback loops
+        document.querySelectorAll('[data-loop]').forEach(loop => {
+            loop.addEventListener('click', (e) => {
+                const loopId = loop.getAttribute('data-loop');
+                showModal(modalContent[loopId]);
+            });
+        });
+
+        // Click handlers for interventions
+        document.querySelectorAll('[data-intervention]').forEach(intervention => {
+            intervention.addEventListener('click', (e) => {
+                const interventionId = intervention.getAttribute('data-intervention');
+                showModal(modalContent[interventionId]);
+            });
+        });
+
+        // Show modal function
+        function showModal(content) {
+            if (!content) return;
+            
+            modalTitle.textContent = content.title;
+            
+            let bodyHTML = '';
+            content.sections.forEach(section => {
+                bodyHTML += `<div class="modal-section">`;
+                if (section.title) {
+                    bodyHTML += `<div class="modal-section-title">${section.title}</div>`;
+                }
+                if (section.content) {
+                    bodyHTML += `<div class="modal-text">${section.content}</div>`;
+                }
+                if (section.list) {
+                    bodyHTML += `<ul class="modal-list">`;
+                    section.list.forEach(item => {
+                        bodyHTML += `<li>${item}</li>`;
+                    });
+                    bodyHTML += `</ul>`;
+                }
+                if (section.badge) {
+                    bodyHTML += `<div class="risk-badge ${section.badge}">${section.badgeText}</div>`;
+                }
+                bodyHTML += `</div>`;
+            });
+            
+            modalBody.innerHTML = bodyHTML;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close modal
+        modalClose.addEventListener('click', () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Add subtle pulse to critical elements
+        const criticalElements = document.querySelectorAll('.critical');
+        criticalElements.forEach(elem => {
+            elem.style.animation = 'pulse 2s ease-in-out infinite';
+        });
+    </script>
+</body>
+</html>
